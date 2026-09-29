@@ -1,4 +1,13 @@
 import { useSyncExternalStore } from "react";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db, isFirebaseConfigured } from "./firebase";
 
 export type ReminderStatus = "scheduled" | "calling" | "delivered" | "failed" | "retrying";
 
@@ -18,6 +27,7 @@ export type Appointment = {
   status: ReminderStatus;
   attempts: CallAttempt[];
   maxAttempts: number;
+  createdAt?: unknown;
 };
 
 export type LanguageCode = "EN" | "ES" | "ZH" | "PT" | "HI";
@@ -46,7 +56,7 @@ export const SLOTS = [
 
 export const TREATMENTS = ["Check-up", "Scaling", "Crown fit", "Filling", "Root canal", "New exam"];
 
-let appointments: Appointment[] = [
+const SEED_APPOINTMENTS: Appointment[] = [
   {
     id: "4818",
     patient: "Amara Okoye",
@@ -129,6 +139,7 @@ let appointments: Appointment[] = [
   },
 ];
 
+let appointments: Appointment[] = [...SEED_APPOINTMENTS];
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -145,7 +156,57 @@ function getSnapshot() {
   return appointments;
 }
 
+// Setup real-time Firestore sync if configured
+let firestoreInitialized = false;
+function initFirestoreSync() {
+  if (typeof window === "undefined" || !isFirebaseConfigured || firestoreInitialized) return;
+  firestoreInitialized = true;
+
+  try {
+    const colRef = collection(db, "appointments");
+    onSnapshot(
+      colRef,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const remoteList: Appointment[] = [];
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            remoteList.push({
+              id: docSnap.id,
+              patient: (data["patient"] as string) || "",
+              phone: (data["phone"] as string) || "",
+              day: (data["day"] as string) || "",
+              time: (data["time"] as string) || "",
+              treatment: (data["treatment"] as string) || "",
+              language: (data["language"] as LanguageCode) || "EN",
+              status: (data["status"] as ReminderStatus) || "scheduled",
+              attempts: Array.isArray(data["attempts"]) ? (data["attempts"] as CallAttempt[]) : [],
+              maxAttempts: typeof data["maxAttempts"] === "number" ? (data["maxAttempts"] as number) : 3,
+            });
+          });
+          appointments = remoteList;
+          emit();
+        } else {
+          // If Firestore collection is empty, seed it with default appointments
+          SEED_APPOINTMENTS.forEach((seed) => {
+            setDoc(doc(db, "appointments", seed.id), {
+              ...seed,
+              createdAt: serverTimestamp(),
+            }).catch(() => {});
+          });
+        }
+      },
+      (err) => {
+        console.warn("[Firestore] Appointments real-time sync:", err.message);
+      }
+    );
+  } catch (err) {
+    console.warn("[Firestore] Unable to connect real-time listener:", err);
+  }
+}
+
 export function useAppointments() {
+  initFirestoreSync();
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
@@ -153,7 +214,7 @@ function now() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
-export function addAppointment(input: {
+export async function addAppointment(input: {
   patient: string;
   phone: string;
   day: string;
@@ -162,49 +223,101 @@ export function addAppointment(input: {
   language: LanguageCode;
 }) {
   const id = String(4840 + appointments.length * 3);
-  appointments.push({
+  const newAppt: Appointment = {
     id,
     ...input,
     status: "scheduled",
     attempts: [],
     maxAttempts: 3,
-  });
+  };
+
+  appointments.push(newAppt);
   emit();
+
+  if (isFirebaseConfigured) {
+    try {
+      await setDoc(doc(db, "appointments", id), {
+        ...newAppt,
+        createdAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("[Firestore] addAppointment error:", err);
+    }
+  }
+
   return id;
 }
 
-export function retryReminder(id: string) {
+export async function retryReminder(id: string) {
   const appt = appointments.find((a) => a.id === id);
   if (!appt) return;
-  appt.attempts = [...appt.attempts, { at: now(), outcome: "manual retry — dialing" }];
+
+  const newAttempts = [...appt.attempts, { at: now(), outcome: "manual retry — dialing" }];
+  appt.attempts = newAttempts;
   appt.status = "calling";
   emit();
 
-  setTimeout(() => {
+  if (isFirebaseConfigured) {
+    try {
+      await updateDoc(doc(db, "appointments", id), {
+        attempts: newAttempts,
+        status: "calling",
+      });
+    } catch (err) {
+      console.warn("[Firestore] retryReminder update error:", err);
+    }
+  }
+
+  setTimeout(async () => {
     const target = appointments.find((a) => a.id === id);
     if (!target) return;
     const last = target.attempts[target.attempts.length - 1];
     if (!last) return;
     const success = target.attempts.length % 2 === 1;
-    target.attempts = [
+    const updatedAttempts = [
       ...target.attempts.slice(0, -1),
       {
         at: last.at,
         outcome: success ? "answered — confirmed" : "no answer",
       },
     ];
+    target.attempts = updatedAttempts;
     if (success) target.status = "delivered";
     else target.status = target.attempts.length >= target.maxAttempts ? "failed" : "retrying";
     emit();
+
+    if (isFirebaseConfigured) {
+      try {
+        await updateDoc(doc(db, "appointments", id), {
+          attempts: updatedAttempts,
+          status: target.status,
+        });
+      } catch (err) {
+        console.warn("[Firestore] retry outcome update error:", err);
+      }
+    }
   }, 2200);
 }
 
-export function triggerReminder(id: string) {
+export async function triggerReminder(id: string) {
   const appt = appointments.find((a) => a.id === id);
   if (!appt) return;
+
+  const newAttempts = [...appt.attempts, { at: now(), outcome: "queued — fires 1 day before" }];
   appt.status = "retrying";
-  appt.attempts = [...appt.attempts, { at: now(), outcome: "queued — fires 1 day before" }];
+  appt.attempts = newAttempts;
   emit();
+
+  if (isFirebaseConfigured) {
+    try {
+      await updateDoc(doc(db, "appointments", id), {
+        status: "retrying",
+        attempts: newAttempts,
+      });
+    } catch (err) {
+      console.warn("[Firestore] triggerReminder error:", err);
+    }
+  }
 }
 
 export const statusLabel: Record<ReminderStatus, string> = {

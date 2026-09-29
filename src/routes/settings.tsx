@@ -1,7 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { LANGUAGES } from "@/lib/clinic-store";
+import {
+  getStaffProfile,
+  updateStaffProfilePreferences,
+  type StaffProfile,
+} from "@/lib/staff-profile";
+import { onAuthChange, signOutUser } from "@/lib/auth-service";
+import type { User } from "firebase/auth";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -26,10 +33,60 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [auto, setAuto] = useState(true);
   const [retries, setRetries] = useState(3);
   const [gap, setGap] = useState(30);
   const [fallback, setFallback] = useState("EN");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthChange(async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        const profile: StaffProfile | null = await getStaffProfile(user.uid);
+        if (profile) {
+          if (typeof profile.autoReminders === "boolean") setAuto(profile.autoReminders);
+          if (typeof profile.retryAttempts === "number") setRetries(profile.retryAttempts);
+          if (typeof profile.retryGapMinutes === "number") setGap(profile.retryGapMinutes);
+          if (profile.preferredLanguage) setFallback(profile.preferredLanguage);
+        }
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  async function handleToggleAuto() {
+    const next = !auto;
+    setAuto(next);
+    await updateStaffProfilePreferences({ autoReminders: next });
+  }
+
+  async function handleRetriesChange(val: number) {
+    setRetries(val);
+    await updateStaffProfilePreferences({ retryAttempts: val });
+  }
+
+  async function handleGapChange(val: number) {
+    setGap(val);
+    await updateStaffProfilePreferences({ retryGapMinutes: val });
+  }
+
+  async function handleFallbackLanguage(lang: string) {
+    setFallback(lang);
+    await updateStaffProfilePreferences({ preferredLanguage: lang });
+  }
+
+  async function handleSignOut() {
+    setSaving(true);
+    try {
+      await signOutUser();
+      navigate({ to: "/auth", replace: true });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <PhoneShell>
@@ -38,6 +95,11 @@ function SettingsPage() {
         <div className="mt-1 font-display text-3xl font-black leading-none tracking-tight">
           Settings
         </div>
+        {currentUser && (
+          <div className="mt-1 truncate text-[10px] text-frost/50">
+            Signed in as <span className="font-semibold text-frost">{currentUser.email || currentUser.displayName || "Staff"}</span>
+          </div>
+        )}
       </div>
 
       <div className="mt-2 flex flex-col gap-2 px-4">
@@ -47,7 +109,7 @@ function SettingsPage() {
             <div className="text-[10px] text-frost/50">Fires 1 day before each appointment</div>
           </div>
           <button
-            onClick={() => setAuto((v) => !v)}
+            onClick={handleToggleAuto}
             className={`h-6 w-11 rounded-full p-0.5 transition-colors ${auto ? "bg-ok" : "bg-frost/20"}`}
           >
             <span
@@ -66,7 +128,7 @@ function SettingsPage() {
             min={1}
             max={5}
             value={retries}
-            onChange={(e) => setRetries(Number(e.target.value))}
+            onChange={(e) => handleRetriesChange(Number(e.target.value))}
             className="mt-2 w-full accent-[var(--signal)]"
           />
           <div className="text-[9px] text-frost/40">
@@ -85,7 +147,7 @@ function SettingsPage() {
             max={120}
             step={10}
             value={gap}
-            onChange={(e) => setGap(Number(e.target.value))}
+            onChange={(e) => handleGapChange(Number(e.target.value))}
             className="mt-2 w-full accent-[var(--signal)]"
           />
         </div>
@@ -96,8 +158,8 @@ function SettingsPage() {
             {LANGUAGES.map((l) => (
               <button
                 key={l.code}
-                onClick={() => setFallback(l.code)}
-                className={`rounded-full px-2 py-0.5 ${
+                onClick={() => handleFallbackLanguage(l.code)}
+                className={`rounded-full px-2 py-0.5 transition-all ${
                   fallback === l.code ? "bg-signal font-bold text-frost" : "bg-frost/10 text-frost/60"
                 }`}
               >
@@ -108,6 +170,25 @@ function SettingsPage() {
           <div className="mt-2 text-[9px] text-frost/40">
             Used when a patient has no preferred language on file.
           </div>
+        </div>
+
+        <div className="mt-2">
+          {currentUser ? (
+            <button
+              onClick={handleSignOut}
+              disabled={saving}
+              className="w-full rounded-2xl border border-signal/30 bg-signal/15 py-3 font-display text-xs font-bold text-signal transition-colors hover:bg-signal/25"
+            >
+              {saving ? "Signing out…" : "Sign out from clinic"}
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate({ to: "/auth" })}
+              className="w-full rounded-2xl border border-frost/20 bg-frost/10 py-3 font-display text-xs font-bold text-frost transition-colors hover:bg-frost/20"
+            >
+              Sign in to staff account
+            </button>
+          )}
         </div>
       </div>
     </PhoneShell>
