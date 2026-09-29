@@ -1,0 +1,157 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Kinetic glass panel palette */
+  --color-ink: var(--ink);
+  --color-frost: var(--frost);
+  --color-cool: var(--cool);
+  --color-signal: var(--signal);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+
+  --font-display: "Archivo", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+:root {
+  --radius: 0.625rem;
+
+  --ink: oklch(0.19 0.018 208);
+  --frost: oklch(0.968 0.012 224);
+  --cool: oklch(0.34 0.036 203);
+  --signal: oklch(0.66 0.226 12);
+  --ok: oklch(0.71 0.145 168);
+  --warn: oklch(0.78 0.145 74);
+
+  --background: var(--frost);
+  --foreground: var(--ink);
+  --card: var(--ink);
+  --card-foreground: var(--frost);
+  --popover: var(--frost);
+  --popover-foreground: var(--ink);
+  --primary: var(--signal);
+  --primary-foreground: var(--frost);
+  --secondary: var(--cool);
+  --secondary-foreground: var(--frost);
+  --muted: oklch(0.9 0.015 224);
+  --muted-foreground: oklch(0.55 0.02 220);
+  --accent: var(--cool);
+  --accent-foreground: var(--frost);
+  --destructive: var(--signal);
+  --destructive-foreground: var(--frost);
+  --border: oklch(0.88 0.015 224);
+  --input: oklch(0.88 0.015 224);
+  --ring: var(--signal);
+
+  --gradient-stage: radial-gradient(120% 80% at 50% -10%, #ffffff, #d8e9f0 55%, #bcd6e2);
+  --gradient-screen: radial-gradient(90% 50% at 50% 0%, #1b3a40, #0a1214);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-mono);
+  }
+}
+
+@utility stage-bg {
+  background-image: var(--gradient-stage);
+}
+
+@utility screen-bg {
+  background-image: var(--gradient-screen);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes blip {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes sheen {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  60%,
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+
+@utility rise {
+  animation: rise 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@utility slide-sheet {
+  animation: slide-up 0.5s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@utility blip {
+  animation: blip 1.6s infinite;
+}
+
+@utility sheen {
+  animation: sheen 3s infinite;
+}

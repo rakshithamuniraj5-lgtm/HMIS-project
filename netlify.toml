@@ -1,0 +1,25 @@
+[build]
+  command   = "npm run build"
+  publish   = ".output/public"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback – send all routes to index.html so TanStack Router handles them client-side
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Security / caching headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
