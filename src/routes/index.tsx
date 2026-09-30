@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: SchedulePage,
-}));
+});
 
 function SchedulePage() {
   const appointments = useAppointments();
