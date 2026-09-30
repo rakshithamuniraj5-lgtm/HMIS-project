@@ -6,6 +6,14 @@
   NODE_VERSION    = "20"
   NITRO_PRESET    = "netlify"
 
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/make-call"
+  to = "/.netlify/functions/make-call"
+  status = 200
+
 # Security / caching headers
 [[headers]]
   for = "/*"

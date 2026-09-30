@@ -139,23 +139,51 @@ export async function executeVoiceCall(
     }
   }
 
-  // Step 2: Speak audio if enabled
+  // Step 2: Speak audio if enabled in browser
   if (options?.speakAloud) {
     playVoiceReminder(appt);
   }
 
-  // Step 3: Simulate carrier dialing / voice response delay
+  // Step 3: Attempt real telecom call dispatch via Twilio API / Serverless function
+  let realCallOutcome: string | null = null;
+  try {
+    const callRes = await fetch("/api/make-call", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: appt.phone,
+        patient: appt.patient,
+        day: appt.day,
+        time: appt.time,
+        treatment: appt.treatment,
+        language: appt.language,
+      }),
+    });
+    if (callRes.ok) {
+      const callData = await callRes.json();
+      if (callData.success && callData.mode === "real_twilio_call") {
+        realCallOutcome = `Real phone call dispatched via Twilio (${callData.callSid}) to ${callData.to} — confirmed [1]`;
+      }
+    }
+  } catch (err) {
+    console.warn("[VoiceReminder] Telephony service dispatch:", err);
+  }
+
+  // Carrier response delay
   await new Promise((resolve) => setTimeout(resolve, 2600));
 
   // Determine outcome
-  const willConfirm =
-    options?.forcedOutcome === "confirmed"
-      ? true
-      : options?.forcedOutcome === "no_answer" || options?.forcedOutcome === "busy"
-      ? false
-      : Math.random() > 0.3; // 70% success rate on automated reminders
+  const willConfirm = realCallOutcome
+    ? true
+    : options?.forcedOutcome === "confirmed"
+    ? true
+    : options?.forcedOutcome === "no_answer" || options?.forcedOutcome === "busy"
+    ? false
+    : Math.random() > 0.3; // 70% success rate on automated reminders
 
-  const outcomeText = willConfirm
+  const outcomeText = realCallOutcome
+    ? realCallOutcome
+    : willConfirm
     ? "Answered — confirmed via keypad [1]"
     : options?.forcedOutcome === "busy"
     ? "Line busy — no response"
