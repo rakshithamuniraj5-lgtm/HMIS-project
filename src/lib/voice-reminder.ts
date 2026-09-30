@@ -13,6 +13,8 @@ export const VOICE_SCRIPTS: Record<
 > = {
   EN: (a) =>
     `Hello ${a.patient}. This is an automated reminder from HMIS Dental Clinic. You have a dental appointment scheduled for tomorrow, ${a.day} at ${a.time} for ${a.treatment}. Please press 1 to confirm your attendance, or call us back to reschedule. Thank you!`,
+  KN: (a) =>
+    `ನಮಸ್ಕಾರ ${a.patient}. ಇದು HMIS ಡೆಂಟಲ್ ಕ್ಲಿನಿಕ್‌ನಿಂದ ಸ್ವಯಂಚಾಲಿತ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಜ್ಞಾಪನೆ. ನಾಳೆ, ${a.day} ರಂದು ${a.time} ಗಂಟೆಗೆ ${a.treatment} ಗಾಗಿ ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ನಿಗದಿಯಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹಾಜರಾತಿಯನ್ನು ಖಚಿತಪಡಿಸಲು 1 ಒತ್ತಿರಿ. ಧನ್ಯವಾದಗಳು!`,
   HI: (a) =>
     `नमस्ते ${a.patient}। यह एचएमआईएस डेंटल क्लिनिक से आपका स्वचालित अपॉइंटमेंट रिमाइंडर है। आपका अपॉइंटमेंट कल ${a.day} को ${a.time} बजे ${a.treatment} के लिए निर्धारित है। कृपया अपनी उपस्थिति की पुष्टि के लिए 1 दबाएं। धन्यवाद!`,
   ES: (a) =>
@@ -25,6 +27,7 @@ export const VOICE_SCRIPTS: Record<
 
 export const BCP47_LANG_CODES: Record<LanguageCode, string> = {
   EN: "en-US",
+  KN: "kn-IN",
   HI: "hi-IN",
   ES: "es-ES",
   ZH: "zh-CN",

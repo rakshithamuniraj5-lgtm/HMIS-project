@@ -31,14 +31,15 @@ export type Appointment = {
   createdAt?: unknown;
 };
 
-export type LanguageCode = "EN" | "ES" | "ZH" | "PT" | "HI";
+export type LanguageCode = "EN" | "KN" | "HI" | "ES" | "ZH" | "PT";
 
 export const LANGUAGES: { code: LanguageCode; label: string }[] = [
   { code: "EN", label: "English" },
+  { code: "KN", label: "ಕನ್ನಡ (Kannada)" },
+  { code: "HI", label: "हिन्दी (Hindi)" },
   { code: "ES", label: "Español" },
   { code: "ZH", label: "中文" },
   { code: "PT", label: "Português" },
-  { code: "HI", label: "हिन्दी" },
 ];
 
 /** Generate a 5-day window starting from today */
