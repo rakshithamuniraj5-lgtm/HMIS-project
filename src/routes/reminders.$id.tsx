@@ -38,7 +38,7 @@ function ReminderDetail() {
 
   if (!appt) {
     return (
-      <PhoneShell>
+      <PhoneShell requireAuth>
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 text-center">
           <div className="font-display text-xl font-black">Reminder not found</div>
           <Link to="/reminders" className="rounded-full bg-signal px-4 py-2 text-[11px] text-frost">
@@ -53,7 +53,7 @@ function ReminderDetail() {
   const progress = Math.min(appt.attempts.length / appt.maxAttempts, 1) * 100;
 
   return (
-    <PhoneShell>
+    <PhoneShell requireAuth>
       <div className="px-5 pb-2 pt-3">
         <Link to="/reminders" className="text-[10px] uppercase tracking-[0.14em] text-frost/45">
           ‹ Back to reminders

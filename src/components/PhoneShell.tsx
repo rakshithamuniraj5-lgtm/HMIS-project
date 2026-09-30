@@ -1,5 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, type ReactNode } from "react";
+import { onAuthChange } from "@/lib/auth-service";
 
 const TABS = [
   { to: "/", label: "Schedule" },
@@ -21,9 +22,39 @@ function useLiveClock() {
   return time;
 }
 
-export function PhoneShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
+export function PhoneShell({
+  children,
+  hideNav = false,
+  requireAuth = false,
+}: {
+  children: ReactNode;
+  hideNav?: boolean;
+  requireAuth?: boolean;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const time = useLiveClock();
+  const [checking, setChecking] = useState(requireAuth);
+
+  useEffect(() => {
+    if (!requireAuth) return;
+    const unsub = onAuthChange((user) => {
+      if (!user) {
+        navigate({ to: "/auth", replace: true });
+      } else {
+        setChecking(false);
+      }
+    });
+    return () => unsub();
+  }, [requireAuth, navigate]);
+
+  if (checking) {
+    return (
+      <div className="stage-bg flex min-h-screen items-center justify-center bg-ink px-4 py-6">
+        <span className="size-8 animate-spin rounded-full border-4 border-signal/20 border-t-signal" />
+      </div>
+    );
+  }
 
   return (
     <div className="stage-bg relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-6">

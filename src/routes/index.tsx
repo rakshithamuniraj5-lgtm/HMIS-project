@@ -82,7 +82,7 @@ function SchedulePage() {
   }
 
   return (
-    <PhoneShell>
+    <PhoneShell requireAuth>
       <div className="px-5 pb-2 pt-3">
         <div className="flex items-end justify-between">
           <div>

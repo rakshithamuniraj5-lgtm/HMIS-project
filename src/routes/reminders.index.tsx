@@ -48,7 +48,7 @@ function RemindersPage() {
   ];
 
   return (
-    <PhoneShell>
+    <PhoneShell requireAuth>
       <div className="px-5 pb-2 pt-3">
         <div className="text-[10px] uppercase tracking-[0.2em] text-signal">Monitor</div>
         <div className="mt-1 font-display text-3xl font-black leading-none tracking-tight">
