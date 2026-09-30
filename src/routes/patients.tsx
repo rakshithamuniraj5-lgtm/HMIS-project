@@ -5,7 +5,7 @@ import { LANGUAGES, useAppointments } from "@/lib/clinic-store";
 export const Route = createFileRoute("/patients")({
   head: () => ({
     meta: [
-      { title: "Patients — Meridian Dental" },
+      { title: "Patients — HMIS" },
       {
         name: "description",
         content:
@@ -46,6 +46,13 @@ function PatientsPage() {
       </div>
 
       <div className="mt-2 flex flex-col gap-2 px-4">
+        {patients.length === 0 && (
+          <div className="rounded-2xl bg-frost/8 p-6 text-center ring-1 ring-frost/10">
+            <div className="text-2xl mb-2">👥</div>
+            <div className="text-[11px] font-semibold text-frost/60">No patients yet</div>
+            <div className="text-[10px] text-frost/40 mt-1">Add appointments to see patients here</div>
+          </div>
+        )}
         {patients.map((a, i) => (
           <Link
             key={a.patient}

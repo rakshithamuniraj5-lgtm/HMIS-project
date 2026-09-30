@@ -11,7 +11,7 @@ import {
 export const Route = createFileRoute("/reminders/")({
   head: () => ({
     meta: [
-      { title: "Reminder monitor — Meridian Dental" },
+      { title: "Reminder monitor — HMIS" },
       {
         name: "description",
         content:
@@ -70,6 +70,15 @@ function RemindersPage() {
       </div>
 
       <div className="mt-2 flex flex-col gap-2 px-4">
+        {shown.length === 0 && (
+          <div className="rounded-2xl bg-frost/8 p-6 text-center ring-1 ring-frost/10">
+            <div className="text-2xl mb-2">🔔</div>
+            <div className="text-[11px] font-semibold text-frost/60">
+              {filter === "all" ? "No appointments yet" : `No ${filter} reminders`}
+            </div>
+            <div className="text-[10px] text-frost/40 mt-1">Add appointments from the Schedule tab</div>
+          </div>
+        )}
         {shown.map((a, i) => (
           <Link
             key={a.id}
