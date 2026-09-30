@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 const TABS = [
   { to: "/", label: "Schedule" },
@@ -8,8 +8,22 @@ const TABS = [
   { to: "/settings", label: "Settings" },
 ] as const;
 
+function useLiveClock() {
+  const [time, setTime] = useState(() =>
+    new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }));
+    }, 30000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
 export function PhoneShell({ children, hideNav = false }: { children: ReactNode; hideNav?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const time = useLiveClock();
 
   return (
     <div className="stage-bg relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-6">
@@ -21,12 +35,13 @@ export function PhoneShell({ children, hideNav = false }: { children: ReactNode;
       <div className="relative w-full max-w-[340px] rounded-[38px] bg-ink p-[10px] shadow-2xl">
         <div className="screen-bg relative flex h-[660px] flex-col overflow-hidden rounded-[30px] bg-ink text-frost">
           <div className="flex items-center justify-between px-5 pt-4 text-[10px] text-frost/50">
-            <span>09:12</span>
+            <span>{time}</span>
             <span className="font-display font-bold tracking-tight text-frost/80">
-              CLINIC · MERIDIAN
+              HMIS
             </span>
             <span>4G ▮</span>
           </div>
+
 
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
 

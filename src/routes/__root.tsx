@@ -77,11 +77,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Meridian Dental — Appointment & Voice Reminder App" },
+      { title: "HMIS — Appointment & Voice Reminder System" },
       {
         name: "description",
         content:
-          "Digital dental appointment scheduling with automated multilingual voice reminders, retry handling, and reminder status tracking.",
+          "Digital appointment scheduling with automated multilingual voice reminders, retry handling, and real-time reminder status tracking.",
       },
     ],
     links: [

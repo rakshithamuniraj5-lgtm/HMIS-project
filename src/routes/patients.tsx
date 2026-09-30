@@ -11,7 +11,7 @@ export const Route = createFileRoute("/patients")({
         content:
           "Patient list with phone numbers and the language each person hears their appointment reminder in.",
       },
-      { property: "og:title", content: "Patients — Meridian Dental" },
+      { property: "og:title", content: "Patients — HMIS" },
       {
         property: "og:description",
         content:

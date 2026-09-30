@@ -8,10 +8,10 @@ import { confirmResetPassword, updateUserPassword, getCurrentUser } from "@/lib/
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — Meridian Dental" },
-      { name: "description", content: "Set a new password for your Meridian Dental staff account." },
-      { property: "og:title", content: "Reset password — Meridian Dental" },
-      { property: "og:description", content: "Recover access to your Meridian Dental staff account." },
+      { title: "Reset Password — HMIS" },
+      { name: "description", content: "Set a new password for your HMIS staff account." },
+      { property: "og:title", content: "Reset Password — HMIS" },
+      { property: "og:description", content: "Recover access to your HMIS staff account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -81,7 +81,7 @@ function ResetPasswordPage() {
           <LockKeyhole className="size-6 text-frost" />
         </div>
         <div className="mt-6 text-[10px] uppercase tracking-[0.2em] text-signal">
-          Meridian · staff access
+          HMIS · Staff Access
         </div>
         <h1 className="mt-2 font-display text-3xl font-black text-frost">New password.</h1>
 

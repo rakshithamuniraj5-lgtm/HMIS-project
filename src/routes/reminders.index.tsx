@@ -17,7 +17,7 @@ export const Route = createFileRoute("/reminders/")({
         content:
           "Track every automated voice reminder: delivered, calling, retrying, or failed and waiting on staff follow-up.",
       },
-      { property: "og:title", content: "Reminder monitor — Meridian Dental" },
+      { property: "og:title", content: "Reminder Monitor — HMIS" },
       {
         property: "og:description",
         content:

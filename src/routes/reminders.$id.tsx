@@ -12,17 +12,17 @@ import {
 export const Route = createFileRoute("/reminders/$id")({
   head: () => ({
     meta: [
-      { title: "Reminder detail — Meridian Dental" },
+      { title: "Reminder Detail — HMIS" },
       {
         name: "description",
         content:
-          "See every voice-call attempt for an appointment reminder and retry it manually when automatic calls fail.",
+          "View every voice-call attempt for an appointment reminder and manually retry when automatic calls fail.",
       },
-      { property: "og:title", content: "Reminder detail — Meridian Dental" },
+      { property: "og:title", content: "Reminder Detail — HMIS" },
       {
         property: "og:description",
         content:
-          "See every voice-call attempt for an appointment reminder and retry it manually when automatic calls fail.",
+          "View every voice-call attempt for an appointment reminder and manually retry when automatic calls fail.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

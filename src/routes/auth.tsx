@@ -14,10 +14,10 @@ import {
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Staff sign in — Meridian Dental" },
-      { name: "description", content: "Sign in to Meridian Dental's appointment and reminder app." },
-      { property: "og:title", content: "Staff sign in — Meridian Dental" },
-      { property: "og:description", content: "Secure access to Meridian Dental's appointment and reminder app." },
+      { title: "Staff Sign In — HMIS" },
+      { name: "description", content: "Sign in to the HMIS Appointment & Voice Reminder System." },
+      { property: "og:title", content: "Staff Sign In — HMIS" },
+      { property: "og:description", content: "Secure staff access to the HMIS appointment and reminder system." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -95,10 +95,10 @@ function AuthPage() {
       <div className="flex min-h-full flex-col px-6 pb-6 pt-8">
         <div className="rise">
           <div className="flex size-12 items-center justify-center rounded-2xl bg-signal font-display text-2xl font-black text-frost">
-            M.
+            H.
           </div>
           <div className="mt-5 text-[10px] uppercase tracking-[0.2em] text-signal">
-            Meridian · staff access
+            HMIS · Staff Access
           </div>
           <h1 className="mt-2 font-display text-[32px] font-black leading-[1.04] text-frost">
             {mode === "signin" ? (

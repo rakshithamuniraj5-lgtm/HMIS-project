@@ -13,17 +13,16 @@ import type { User } from "firebase/auth";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Reminder settings — Meridian Dental" },
+      { title: "Reminder Settings — HMIS" },
       {
         name: "description",
         content:
-          "Set when voice reminders fire, how many retries to attempt, and which language is used by default.",
+          "Configure when voice reminders fire, retry attempts, gaps between retries, and default reminder language.",
       },
-      { property: "og:title", content: "Reminder settings — Meridian Dental" },
+      { property: "og:title", content: "Reminder Settings — HMIS" },
       {
         property: "og:description",
-        content:
-          "Set when voice reminders fire, how many retries to attempt, and which language is used by default.",
+        content: "Configure automated voice reminder settings for the HMIS appointment system.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
