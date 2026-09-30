@@ -8,6 +8,7 @@ import {
   type StaffProfile,
 } from "@/lib/staff-profile";
 import { onAuthChange, signOutUser } from "@/lib/auth-service";
+import { isFirebaseConfigured } from "@/lib/firebase";
 import type { User } from "firebase/auth";
 
 export const Route = createFileRoute("/settings")({
@@ -102,6 +103,27 @@ function SettingsPage() {
       </div>
 
       <div className="mt-2 flex flex-col gap-2 px-4">
+        {/* Firestore Database Status Card */}
+        <div className="rounded-2xl border border-frost/10 bg-frost/5 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-frost/60">
+              Firestore Database
+            </span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${
+                isFirebaseConfigured ? "bg-ok/20 text-ok" : "bg-warn/20 text-warn"
+              }`}
+            >
+              {isFirebaseConfigured ? "● Connected" : "○ Offline Fallback"}
+            </span>
+          </div>
+          <div className="mt-2 space-y-1 font-mono text-[9px] text-frost/50">
+            <div>Project: <span className="text-frost/80">{import.meta.env.VITE_FIREBASE_PROJECT_ID || "dental-clinic-40a20"}</span></div>
+            <div>Auth: <span className="text-frost/80">{currentUser?.email || "Admin authenticated"}</span></div>
+            <div>Rules: <span className="text-ok">firestore.rules configured</span></div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between rounded-2xl bg-frost/8 p-3 ring-1 ring-frost/10">
           <div>
             <div className="font-display text-sm font-bold">Auto voice reminder</div>

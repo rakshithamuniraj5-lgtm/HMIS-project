@@ -5,8 +5,11 @@ import {
   statusClasses,
   statusLabel,
   useAppointments,
+  trigger1DayAutomatedWorkflow,
+  DAYS,
   type ReminderStatus,
 } from "@/lib/clinic-store";
+import { get1DayBeforeAppointments } from "@/lib/voice-reminder";
 
 export const Route = createFileRoute("/reminders/")({
   head: () => ({
@@ -35,6 +38,12 @@ type Filter = "all" | ReminderStatus;
 function RemindersPage() {
   const appointments = useAppointments();
   const [filter, setFilter] = useState<Filter>("all");
+  const [isRunning1DayWorkflow, setIsRunning1DayWorkflow] = useState(false);
+  const [speakAloud, setSpeakAloud] = useState(true);
+  const [workflowBanner, setWorkflowBanner] = useState<string | null>(null);
+
+  const tomorrowDay = DAYS[1];
+  const eligible1DayAppts = get1DayBeforeAppointments(appointments);
 
   const count = (s: ReminderStatus) => appointments.filter((a) => a.status === s).length;
   const shown = filter === "all" ? appointments : appointments.filter((a) => a.status === filter);
@@ -47,6 +56,22 @@ function RemindersPage() {
     { key: "failed", label: `Failed ${exceptions}`, cls: "bg-signal/20 text-signal" },
   ];
 
+  async function handleRun1DayWorkflow() {
+    if (isRunning1DayWorkflow || eligible1DayAppts.length === 0) return;
+    setIsRunning1DayWorkflow(true);
+    setWorkflowBanner(`Calling ${eligible1DayAppts.length} patient(s) scheduled for tomorrow (${tomorrowDay})…`);
+    try {
+      const result = await trigger1DayAutomatedWorkflow(speakAloud);
+      setWorkflowBanner(
+        `✓ Finished! Executed ${result.completed} voice reminders for tomorrow (${tomorrowDay}).`
+      );
+    } catch (err) {
+      setWorkflowBanner("Voice workflow encounter an issue: " + String(err));
+    } finally {
+      setIsRunning1DayWorkflow(false);
+    }
+  }
+
   return (
     <PhoneShell requireAuth>
       <div className="px-5 pb-2 pt-3">
@@ -54,6 +79,59 @@ function RemindersPage() {
         <div className="mt-1 font-display text-3xl font-black leading-none tracking-tight">
           Reminders
         </div>
+
+        {/* ── 1-Day Before Automated Voice Reminder Widget ── */}
+        <div className="mt-3 rounded-2xl border border-signal/30 bg-gradient-to-br from-signal/15 to-signal/5 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-signal">
+              ⚡ 1-Day Voice Reminder Workflow
+            </span>
+            <span className="rounded-full bg-signal/20 px-2 py-0.5 text-[9px] font-medium text-signal">
+              Tomorrow: {tomorrowDay}
+            </span>
+          </div>
+
+          <p className="mt-1.5 text-[10.5px] leading-tight text-frost/70">
+            Automatically dials patients scheduled for tomorrow in their preferred language ({eligible1DayAppts.length} pending).
+          </p>
+
+          {workflowBanner && (
+            <div className="mt-2 rounded-xl bg-ink/60 px-2.5 py-1.5 text-[10px] font-medium text-frost/90 ring-1 ring-signal/30">
+              {workflowBanner}
+            </div>
+          )}
+
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <label className="flex cursor-pointer items-center gap-1.5 text-[9.5px] text-frost/60">
+              <input
+                type="checkbox"
+                checked={speakAloud}
+                onChange={(e) => setSpeakAloud(e.target.checked)}
+                className="size-3.5 accent-[var(--signal)] rounded"
+              />
+              <span>🔊 Voice audio preview</span>
+            </label>
+
+            <button
+              onClick={handleRun1DayWorkflow}
+              disabled={isRunning1DayWorkflow || eligible1DayAppts.length === 0}
+              className={`rounded-xl px-3 py-1.5 text-[10px] font-bold transition-all ${
+                eligible1DayAppts.length === 0
+                  ? "bg-frost/10 text-frost/40 cursor-not-allowed"
+                  : isRunning1DayWorkflow
+                  ? "bg-warn text-ink animate-pulse"
+                  : "bg-signal text-frost hover:opacity-90 shadow-md"
+              }`}
+            >
+              {isRunning1DayWorkflow
+                ? "Dials in progress…"
+                : eligible1DayAppts.length === 0
+                ? "All 1-day reminders done"
+                : `Trigger 1-day reminders (${eligible1DayAppts.length})`}
+            </button>
+          </div>
+        </div>
+
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1 text-[9px] uppercase tracking-wider">
           {chips.map((c) => (
             <button

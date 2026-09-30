@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // HMIS Dental Appointment System Firestore Security Rules
+    
+    // Allow reading and writing appointments
+    match /appointments/{appointmentId} {
+      allow read, write: if true;
+    }
+
+    // Allow staff profiles read and write
+    match /staff_profiles/{profileId} {
+      allow read, write: if true;
+    }
+
+    // Catch-all fallback
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

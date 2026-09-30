@@ -227,76 +227,62 @@ export async function deleteAppointment(id: string): Promise<void> {
   }
 }
 
-export async function retryReminder(id: string) {
+export async function retryReminder(id: string, speakAloud = false) {
   const appt = appointments.find((a) => a.id === id);
   if (!appt) return;
 
-  const newAttempts = [...appt.attempts, { at: now(), outcome: "manual retry — dialing" }];
-  appt.attempts = newAttempts;
-  appt.status = "calling";
-  emit();
-
-  if (isFirebaseConfigured) {
-    try {
-      await updateDoc(doc(db, "appointments", id), {
-        attempts: newAttempts,
-        status: "calling",
-      });
-    } catch (err) {
-      console.warn("[Firestore] retryReminder update error:", err);
-    }
-  }
-
-  setTimeout(async () => {
-    const target = appointments.find((a) => a.id === id);
-    if (!target) return;
-    const last = target.attempts[target.attempts.length - 1];
-    if (!last) return;
-    const success = target.attempts.length % 2 === 1;
-    const updatedAttempts = [
-      ...target.attempts.slice(0, -1),
-      {
-        at: last.at,
-        outcome: success ? "answered — confirmed" : "no answer",
-      },
-    ];
-    target.attempts = updatedAttempts;
-    if (success) target.status = "delivered";
-    else target.status = target.attempts.length >= target.maxAttempts ? "failed" : "retrying";
-    emit();
-
-    if (isFirebaseConfigured) {
-      try {
-        await updateDoc(doc(db, "appointments", id), {
-          attempts: updatedAttempts,
-          status: target.status,
-        });
-      } catch (err) {
-        console.warn("[Firestore] retry outcome update error:", err);
-      }
-    }
-  }, 2200);
+  const { executeVoiceCall } = await import("./voice-reminder");
+  await executeVoiceCall(appt, { speakAloud });
 }
 
 export async function triggerReminder(id: string) {
   const appt = appointments.find((a) => a.id === id);
   if (!appt) return;
 
-  const newAttempts = [...appt.attempts, { at: now(), outcome: "queued — fires 1 day before" }];
-  appt.status = "retrying";
+  const newAttempts = [...appt.attempts, { at: now(), outcome: "queued — auto-fires 1 day before" }];
+  appt.status = "scheduled";
   appt.attempts = newAttempts;
   emit();
 
   if (isFirebaseConfigured) {
     try {
       await updateDoc(doc(db, "appointments", id), {
-        status: "retrying",
+        status: "scheduled",
         attempts: newAttempts,
       });
     } catch (err) {
       console.warn("[Firestore] triggerReminder error:", err);
     }
   }
+}
+
+/**
+ * Automated 1-Day Before Workflow:
+ * Finds all appointments scheduled for tomorrow (DAYS[1]) that are "scheduled" or "retrying",
+ * and executes the automated multilingual voice reminder call for each patient.
+ */
+export async function trigger1DayAutomatedWorkflow(speakAloud = false): Promise<{
+  totalEligible: number;
+  completed: number;
+}> {
+  const tomorrow = DAYS[1];
+  const eligible = appointments.filter(
+    (a) => a.day === tomorrow && (a.status === "scheduled" || a.status === "retrying")
+  );
+
+  if (eligible.length === 0) {
+    return { totalEligible: 0, completed: 0 };
+  }
+
+  const { executeVoiceCall } = await import("./voice-reminder");
+  let completedCount = 0;
+
+  for (const appt of eligible) {
+    await executeVoiceCall(appt, { speakAloud });
+    completedCount++;
+  }
+
+  return { totalEligible: eligible.length, completed: completedCount };
 }
 
 export const statusLabel: Record<ReminderStatus, string> = {
