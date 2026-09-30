@@ -31,6 +31,8 @@ export const BCP47_LANG_CODES: Record<LanguageCode, string> = {
   PT: "pt-BR",
 };
 
+let activeUtterance: SpeechSynthesisUtterance | null = null;
+
 /** Synthesize and speak the reminder using the browser's SpeechSynthesis engine */
 export function playVoiceReminder(
   appt: { patient: string; day: string; time: string; treatment: string; language: LanguageCode },
@@ -40,28 +42,42 @@ export function playVoiceReminder(
     return false;
   }
 
-  // Cancel any ongoing speech
+  // Cancel any ongoing speech and ensure synthesis is active
   window.speechSynthesis.cancel();
+  window.speechSynthesis.resume();
 
   const script = VOICE_SCRIPTS[appt.language]?.(appt) || VOICE_SCRIPTS.EN(appt);
   const utterance = new SpeechSynthesisUtterance(script);
+  activeUtterance = utterance; // Keep reference to prevent Chrome garbage collection mid-speech
+
   utterance.lang = BCP47_LANG_CODES[appt.language] || "en-US";
-  utterance.rate = 0.95; // Slightly slower for clear telephone clarity
+  utterance.rate = 0.92; // Clear telephone pace
   utterance.pitch = 1.0;
 
   // Attempt to select a voice matching the target language
   const voices = window.speechSynthesis.getVoices();
-  const matchedVoice = voices.find((v) => v.lang.startsWith(utterance.lang.slice(0, 2)));
+  const matchedVoice = voices.find((v) => v.lang.toLowerCase().startsWith(utterance.lang.toLowerCase().slice(0, 2)));
   if (matchedVoice) {
     utterance.voice = matchedVoice;
   }
 
-  if (onEnd) {
-    utterance.onend = onEnd;
-    utterance.onerror = () => onEnd();
-  }
+  utterance.onend = () => {
+    activeUtterance = null;
+    if (onEnd) onEnd();
+  };
 
-  window.speechSynthesis.speak(utterance);
+  utterance.onerror = (e) => {
+    console.warn("[VoiceReminder] Speech error or canceled:", e);
+    activeUtterance = null;
+    if (onEnd) onEnd();
+  };
+
+  // Small timeout to allow cancel() to clear cleanly in Chromium
+  setTimeout(() => {
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utterance);
+  }, 50);
+
   return true;
 }
 
