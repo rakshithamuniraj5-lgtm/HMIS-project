@@ -1,218 +1,230 @@
-# HMIS — Hospital Management Information System
-### Digital Appointment Scheduling & Automated Voice Reminder System
+# HMIS — Hospital & Dental Appointment Management System
+### Digital Appointment Scheduling with Automated Multilingual Voice Reminders (Kannada, Hindi, English)
+
+[![Live App](https://img.shields.io/badge/Live%20App-Netlify-00C7B7?style=for-the-badge&logo=netlify)](https://lokapurdentalclinic.netlify.app/)
+[![Database](https://img.shields.io/badge/Database-Firebase%20Firestore-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
+[![Voice](https://img.shields.io/badge/Voice%20Engine-Web%20Speech%20%2B%20Twilio-F22F46?style=for-the-badge&logo=twilio)](https://www.twilio.com/)
+
+**Live Production URL:** [https://lokapurdentalclinic.netlify.app/](https://lokapurdentalclinic.netlify.app/)
 
 ---
 
-## Problem Statement
+## 📌 Problem Statement
 
-The current dental/hospital appointment process relies on **paper-based scheduling and manual reminder calls**, making appointment management time-consuming and heavily dependent on clinic staff.
+Traditional dental and outpatient clinic workflows rely heavily on **paper-based appointment registers and manual reminder phone calls**. This process creates severe bottlenecks:
 
-After an appointment is recorded, staff must manually contact patients **one day before** the appointment. This leads to:
-
-- ❌ **Missed reminders** — staff may forget or run out of time
-- ❌ **Inconsistent follow-up** — no standardised retry process
-- ❌ **Communication barriers** — no support for patient's preferred language
-- ❌ **No visibility** — no way to see reminder status at a glance
+- ❌ **Time-Consuming & Staff Dependent:** Clinic staff must manually dial every patient one day before their scheduled visit.
+- ❌ **Missed Reminders & High No-Show Rates:** Staff easily forget to call or run out of time during busy clinic hours.
+- ❌ **Communication & Language Barriers:** Patients often prefer local regional languages (e.g., **Kannada / ಕನ್ನಡ**, **Hindi / हिन्दी**), which clinic staff may struggle to provide consistently.
+- ❌ **Zero Visibility & Follow-up Gaps:** No systematic tracking of whether a call was answered, missed, or confirmed, leading to unconfirmed slots and lost clinic revenue.
 
 ---
 
-## Our Solution
+## 💡 The Solution: HMIS Digital System
 
-**HMIS** is a digital appointment scheduling system that:
+**HMIS** is an end-to-end digital scheduling and automated voice reminder solution built to resolve these exact challenges:
 
-1. **Manages appointment slots** — staff can book, view, and delete appointments through a clean mobile-first interface
-2. **Triggers automated voice reminders** — one day before each scheduled appointment, a voice call is automatically placed to the patient
-3. **Supports multilingual reminders** — reminders are made in the patient's preferred language (English, Spanish, Mandarin, Portuguese, Hindi)
-4. **Tracks reminder status in real-time** — every appointment shows its current state (Scheduled → Calling → Delivered / Retrying / Failed)
-5. **Handles retries automatically** — if a call fails, the system retries up to a configurable number of times with configurable gaps
-6. **Exception handling** — failed reminders are flagged for manual staff follow-up before end of day
-
----
-
-## Features
-
-### 📅 Schedule
-- View appointments by day (today + next 4 days, dynamically generated)
-- Add new appointments with patient name, phone, time slot, treatment, and preferred language
-- Delete appointments with immediate Firestore sync
-- Real-time data — survives page refresh
-
-### 🔔 Reminders
-- Monitor all voice reminders in one view
-- Filter by status: All / Delivered / Retrying / Failed
-- Tap any reminder to see full call attempt log
-
-### 👥 Patients
-- Unique patient directory built from appointment data
-- Shows phone number and preferred reminder language per patient
-
-### ⚙️ Settings
-- Toggle automatic voice reminders on/off
-- Configure retry attempts (1–5)
-- Configure gap between retries (10–120 min)
-- Set fallback language for patients with no preference
-- Staff sign-in / sign-out
-
-### 🔐 Authentication
-- Firebase Auth — email/password + Google Sign-In
-- Password reset via email link
-- Staff-only access to the system
+1. **Digital Slot Management:** Clean mobile-first UI for booking, viewing, and managing patient appointments with real-time Google Cloud Firestore synchronization.
+2. **Automated 1-Day Before Trigger:** The system automatically identifies every appointment scheduled for tomorrow (24 hours prior) and triggers a personalized voice reminder.
+3. **Multilingual Regional Voice Reminders:** Speaks fluently in the patient's preferred language:
+   - **Kannada (ಕನ್ನಡ)**: *"ನಮಸ್ಕಾರ {patient}. ಇದು ಲೋಕಾಪುರ ಡೆಂಟಲ್ ಕ್ಲಿನಿಕ್‌ನಿಂದ ಸ್ವಯಂಚಾಲಿತ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಜ್ಞಾಪನೆ. ನಾಳೆ {day} ರಂದು {time} ಗಂಟೆಗೆ {treatment} ಗಾಗಿ ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ನಿಗದಿಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಖಚಿತಪಡಿಸಲು 1 ಒತ್ತಿರಿ."*
+   - **Hindi (हिन्दी)**: *"नमस्ते {patient}। यह लोकपुर डेंटल क्लिनिक से आपका स्वचालित अपॉइंटमेंट रिमाइंडर है..."*
+   - **English (EN)**: *"Hello {patient}. This is an automated reminder from Lokapur Dental Clinic..."*
+   - **Spanish (ES), Chinese (ZH), Portuguese (PT)** also supported.
+4. **Keypad Confirmation (`DTMF [1]`):** Patients press `1` to confirm their appointment on their phone, automatically updating their status to **Delivered & Confirmed**.
+5. **Smart Automated Retry Engine:** Unanswered calls or busy lines automatically retry up to 3 times with configurable gaps.
+6. **Staff Escalation:** If all retry attempts fail, the system highlights the patient under **Failed Exceptions** for manual staff follow-up.
 
 ---
 
-## Technical Architecture
+## 🚀 Key Features
+
+### 📅 1. Interactive Schedule
+- Dynamic 5-day calendar window (Today + next 4 days).
+- Add new appointments with patient name, contact number, treatment type, and language preference.
+- Persistent storage in Firebase Firestore (survives browser refresh and device switches).
+
+### 🔔 2. Reminder Monitor & 1-Day Automated Workflow
+- Dedicated **⚡ 1-Day Voice Reminder Workflow** card showing tomorrow's target date and pending call count.
+- One-click **"Trigger 1-day reminders"** batch dialer.
+- Real-time status filters: `All`, `Delivered`, `Retry`, `Failed`.
+
+### 🎙️ 3. Voice Audio Engine & Telephony Integration
+- **In-Browser Audio Simulator:** Uses Web Speech Synthesis with native BCP-47 voices (`kn-IN`, `hi-IN`, `en-US`) for instant testing and demonstration without telecom fees.
+- **Real Telecom Calling (Twilio Voice API):** Serverless function (`/api/make-call`) triggers actual physical mobile phone ringing via cellular networks with Amazon Polly Indian neural voice (`Polly.Aditi`).
+
+### 👥 4. Patient Directory
+- Aggregates unique patient records from appointment history.
+- Displays phone number and preferred reminder language for every patient.
+
+### ⚙️ 5. Automation Settings & Staff Profiles
+- Enable/disable automated 1-day voice reminders.
+- Configure maximum retry attempts (1 to 5).
+- Configure retry time gaps (10 to 120 minutes).
+- Set default fallback language for patients without a recorded preference.
+- Real-time Firestore connection health indicator.
+
+### 🔐 6. Role-Based Authentication & Guard
+- Secure starting page (`/auth`) powered by Firebase Auth.
+- Protected route guards redirect unauthorized visitors to login.
+- Email/Password login + Google Sign-In + Email password reset.
+
+---
+
+## 🏗️ Technical Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   HMIS Web App                          │
-│              (TanStack Start + React)                   │
-├──────────────┬──────────────────┬───────────────────────┤
-│  Schedule    │   Reminders      │   Patients / Settings  │
-│  (index.tsx) │ (reminders/*.tsx)│  (patients/settings)   │
-└──────────────┴──────────────────┴───────────────────────┘
-        │                │
-        ▼                ▼
-┌───────────────────────────────┐
-│         Firebase              │
-│  ┌────────────┐  ┌─────────┐  │
-│  │ Firestore  │  │  Auth   │  │
-│  │ /appts     │  │ Email + │  │
-│  │ real-time  │  │ Google  │  │
-│  └────────────┘  └─────────┘  │
-└───────────────────────────────┘
-        │
-        ▼
-┌───────────────────────────────┐
-│        CI/CD Pipeline         │
-│  VS Code → Git Push           │
-│  → GitHub Actions (build)     │
-│  → Netlify (deploy)           │
-│  Live in ~30 seconds          │
-└───────────────────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | TanStack Start (React, SSR) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Database | Firebase Firestore (real-time) |
-| Auth | Firebase Authentication |
-| Hosting | Netlify (Serverless Functions) |
-| CI/CD | GitHub Actions |
-| Build | Vite + Nitro (netlify preset) |
-
----
-
-## Reminder Status Flow
-
-```
-Appointment Booked
-      │
-      ▼
-  SCHEDULED ──(1 day before)──▶ CALLING
-                                    │
-                    ┌───────────────┼───────────────┐
-                    ▼               ▼               ▼
-                DELIVERED       NO ANSWER        FAILED
-                (answered +    (retries left)  (max retries
-                confirmed)          │           reached)
-                                    ▼               │
-                                RETRYING      Staff Follow-up
-                                    │
-                              (retry after gap)
+┌─────────────────────────────────────────────────────────────┐
+│                 HMIS Frontend Application                   │
+│                  (TanStack Start + React)                   │
+├──────────────┬──────────────────┬───────────────────────────┤
+│  Schedule    │  Reminder Engine │   Patients & Settings     │
+│  (index.tsx) │ (reminders/*.tsx)│  (patients.tsx, settings) │
+└──────────────┴──────────────────┴───────────────────────────┘
+        │                │                       │
+        ▼                ▼                       ▼
+┌─────────────────────────────────┐   ┌───────────────────────┐
+│     Google Firebase Services    │   │ Telecom Voice Gateway │
+│  ┌──────────────┬────────────┐  │   │  (Twilio Voice API)   │
+│  │  Firestore   │    Auth    │  │   │  ┌──────────────────┐ │
+│  │ appointments │ email/pass │  │   │  │ Amazon Polly TTS │ │
+│  │ real-time db │  sessions  │  │   │  │  (kn-IN, hi-IN)  │ │
+│  └──────────────┴────────────┘  │   │  └──────────────────┘ │
+└─────────────────────────────────┘   └───────────────────────┘
+        │                                        ▲
+        ▼                                        │
+┌─────────────────────────────────────────────────────────────┐
+│               Netlify Serverless Infrastructure             │
+│        - Nitro Serverless Engine (Static + SSR)             │
+│        - Netlify Function: /api/make-call.ts                │
+│        - Automatic CI/CD on Git push to 'main'              │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Local Development
+## 📊 Reminder Lifecycle State Machine
 
-### Prerequisites
-- Node.js 20+
-- Firebase project with Firestore + Auth enabled
+```
+   [ Appointment Booked ]
+             │
+             ▼
+     ┌───────────────┐
+     │   SCHEDULED   │
+     └───────┬───────┘
+             │ (1 Day Before Scheduled Date)
+             ▼
+     ┌───────────────┐
+     │    CALLING    │◀─────────────────────────┐
+     └───────┬───────┘                          │
+             │                                  │
+    ┌────────┼─────────────────┐                │
+    │        │                 │                │
+    ▼        ▼                 ▼                │
+[Answered] [No Answer / Busy] [Max Retries Met] │
+    │        │                 │                │
+    ▼        ▼                 ▼                │
+┌─────────┐ ┌─────────┐   ┌─────────┐           │
+│DELIVERED│ │RETRYING │   │ FAILED  │           │
+│(Conf. 1)│ └────┬────┘   └────┬────┘           │
+└─────────┘      │             │                │
+                 │             ▼                │
+                 │      [Staff Manual Call]     │
+                 │                              │
+                 └──────(Wait Gap Interval)─────┘
+```
 
-### Setup
+---
 
-```sh
+## 🛠️ Tech Stack & Libraries
+
+| Component | Technology | Description |
+|:---|:---|:---|
+| **Frontend Framework** | TanStack Start (React 19) | Full-stack SSR and client routing |
+| **Language** | TypeScript | Strict type safety across client and server |
+| **Styling** | Tailwind CSS v4 | Responsive mobile-first phone shell layout |
+| **Database** | Firebase Firestore | Real-time document store for appointments |
+| **Authentication** | Firebase Auth | Secure email/password and session handling |
+| **Voice Synthesis** | Web Speech API + Polly | Native speech engine in Kannada, Hindi, English |
+| **Telephony Gateway**| Twilio Voice API / TwiML | Real-time GSM phone dialing and keypad collection |
+| **Hosting & CI/CD** | Netlify + GitHub Actions | Automated serverless deployments on push |
+
+---
+
+## 💻 Local Development Setup
+
+### 1. Clone the Repository
+```bash
 git clone https://github.com/rakshithamuniraj5-lgtm/HMIS-project.git
 cd HMIS-project
 npm install
 ```
 
-Copy the example env file and fill in your Firebase credentials:
-
-```sh
-cp .env.example .env
-```
-
+### 2. Environment Variables (.env)
+Create a `.env` file in the root directory:
 ```env
+# Firebase Configuration
 VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_AUTH_DOMAIN=dental-clinic-40a20.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=dental-clinic-40a20
+VITE_FIREBASE_STORAGE_BUCKET=dental-clinic-40a20.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=691532303172
 VITE_FIREBASE_APP_ID=your-app-id
+
+# Optional: Twilio Configuration (For real cellular phone ringing)
+TWILIO_ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_PHONE_NUMBER=+1234567890
 ```
 
-```sh
+### 3. Run the Development Server
+```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Deployment
-
-This project deploys automatically via **GitHub Actions** on every push to `main`:
+## 📁 Project Directory Structure
 
 ```
-git push origin main
-  → GitHub Actions: npm ci + npm run build (NITRO_PRESET=netlify)
-  → Firebase env vars injected from GitHub Secrets
-  → Netlify deploys dist/ + .netlify/functions-internal/
-  → Live in ~30 seconds
-```
-
-### Required GitHub Secrets
-
-| Secret | Description |
-|--------|-------------|
-| `NETLIFY_AUTH_TOKEN` | Netlify personal access token |
-| `NETLIFY_SITE_ID` | Netlify site ID |
-| `VITE_FIREBASE_*` | All 6 Firebase config values |
-
----
-
-## Project Structure
-
-```
-src/
-├── routes/
-│   ├── __root.tsx          # App shell, fonts, global meta
-│   ├── index.tsx           # Schedule page (main screen)
-│   ├── reminders.index.tsx # All reminders monitor
-│   ├── reminders.$id.tsx   # Reminder detail + retry
-│   ├── patients.tsx        # Patient directory
-│   ├── settings.tsx        # System settings + sign out
-│   ├── auth.tsx            # Sign in / Sign up / Forgot password
-│   └── reset-password.tsx  # Email link password reset
-├── lib/
-│   ├── firebase.ts         # Firebase app initialisation
-│   ├── clinic-store.ts     # Firestore real-time state store
-│   ├── auth-service.ts     # Auth functions (sign in/up/out)
-│   └── staff-profile.ts    # Per-user settings in Firestore
-└── components/
-    ├── PhoneShell.tsx       # Mobile UI shell + nav tabs
-    └── ui/                  # Radix UI component library
+hmis/
+├── netlify/
+│   └── functions/
+│       └── make-call.ts           # Twilio telecom voice call serverless function
+├── src/
+│   ├── routes/
+│   │   ├── __root.tsx             # Root document, meta tags, and fonts
+│   │   ├── index.tsx              # Daily appointment schedule view
+│   │   ├── reminders.index.tsx    # 1-day reminder monitor & batch runner
+│   │   ├── reminders.$id.tsx      # Reminder detail, TTS playback, keypad log
+│   │   ├── patients.tsx           # Aggregated patient directory
+│   │   ├── settings.tsx           # Automation settings & staff profile
+│   │   ├── auth.tsx               # Login & authentication guard screen
+│   │   └── reset-password.tsx     # Password recovery workflow
+│   ├── lib/
+│   │   ├── clinic-store.ts        # Firestore real-time sync & state store
+│   │   ├── voice-reminder.ts      # Multilingual speech engine (Kannada, Hindi, English)
+│   │   ├── firebase.ts            # Firebase app initialization & fallbacks
+│   │   ├── auth-service.ts        # Authentication methods
+│   │   └── staff-profile.ts       # User preference persistence
+│   └── components/
+│       └── PhoneShell.tsx         # Mobile phone container & navigation tabs
+├── firestore.rules                # Firestore security rules
+├── firebase.json                  # Firebase CLI configuration
+├── netlify.toml                   # Netlify build, redirect, and function settings
+└── package.json                   # Project dependencies and build scripts
 ```
 
 ---
 
-## Built with
+## 👨‍⚕️ Default Staff Credentials (Demo & Evaluation)
 
-- [TanStack Start](https://tanstack.com/start) — Full-stack React framework
-- [Firebase](https://firebase.google.com) — Realtime database + auth
-- [Tailwind CSS](https://tailwindcss.com) — Utility-first styling
-- [Netlify](https://netlify.com) — Hosting with serverless functions
-- [GitHub Actions](https://github.com/features/actions) — CI/CD pipeline
+| Role | Email | Password |
+|:---|:---|:---|
+| **Clinic Administrator** | `admin@gmail.com` | `Admin@123` |
+
+---
+
+## 📄 License
+This project is open-source and available under the **MIT License**.
